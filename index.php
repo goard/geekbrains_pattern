@@ -1,174 +1,65 @@
 <?php
-namespace Ayur\Pattern\AbstractFactory\Abstract;
+namespace Ayur\Pattern\Decarator;
 
-abstract class AbstractFactory
+interface Notifier
 {
-  abstract public function DBConnection() : Connection;
-  abstract public function DBRecord() : Record;
-  abstract public function DBQueryBuilder() : QueryBuilder;
+  public function send() : string;
 }
 
-class MySQLFactory extends AbstractFactory
+class ConcreteNotifier implements Notifier
 {
-  public function DBConnection() : Connection
+  public function send() : string
   {
-    return new MySQLConnection();
-  }
-
-  public function DBRecord() : Record
-  {
-    return new MySQLRecord();
-  }
-
-  public function DBQueryBuilder() : QueryBuilder
-  {
-    return new MySQLQueryBuilder();
+    return "Send Message ConcreteComponent";
   }
 }
 
-class PostgreSQLFactory extends AbstractFactory
+class Decorator implements Notifier
 {
-  public function DBConnection() : Connection
+  /**
+   * @var Notifier
+   */
+  protected $component;
+
+  public function __construct(Notifier $component)
   {
-    return new PostgreSQLConnection();
+    $this->component = $component;
   }
 
-  public function DBRecord() : Record
+  public function send() : string
   {
-    return new PostgreSQLRecord();
-  }
-
-  public function DBQueryBuilder() : QueryBuilder
-  {
-    return new PostgreSQLQueryBuilder();
-  }
-}
-
-class OracleFactory extends AbstractFactory
-{
-  public function DBConnection() : Connection
-  {
-    return new OracleConnection();
-  }
-
-  public function DBRecord() : Record
-  {
-    return new OracleRecord();
-  }
-
-  public function DBQueryBuilder() : QueryBuilder
-  {
-    return new OracleQueryBuilder();
+    return $this->component->send();
   }
 }
 
-interface Connection
+class EmailNotifier extends Decorator
 {
-  public function usefulFuctionA() : string;
-}
-
-class MySQLConnection implements Connection
-{
-  public function usefulFuctionA() : string
+  public function send() : string 
   {
-    return 'The result of the connection MySQL';
+    return "EmailNotifier(" . parent::send() . ")";
   }
 }
 
-class PostgreSQLConnection implements Connection
+class SlackNotifier extends Decorator
 {
-  public function usefulFuctionA() : string
+  public function send() : string
   {
-    return 'The result of the connection PostgreSQL';
+    return "SlackNotifier(" . parent::send() . ")";
   }
 }
 
-class OracleConnection implements Connection
+function clientCode(Notifier $component)
 {
-  public function usefulFuctionA() : string
-  {
-    return 'The result of the connection Oracle';
-  }
+  echo "RESULT: " . $component->send();
 }
 
-interface Record
-{
-  public function usefulFuctionB() : string;
-}
+$simple = new ConcreteNotifier();
+echo "Client: I've got a simple component: \n";
+clientCode($simple);
+echo "\n\n";
 
-class MySQLRecord implements Record
-{
-  public function usefulFuctionB() : string
-  {
-    return 'The result of the record MySQL';
-  }
-}
-
-class PostgreSQLRecord implements Record
-{
-  public function usefulFuctionB() : string
-  {
-    return 'The result of the record PostgreSQL';
-  }
-}
-
-class OracleRecord implements Record
-{
-  public function usefulFuctionB() : string
-  {
-    return 'The result of the record Oracle';
-  }
-}
-
-interface QueryBuilder
-{
-  public function usefulFuctionC() : string;
-}
-
-class MySQLQueryBuilder implements QueryBuilder
-{
-  public function usefulFuctionC() : string
-  {
-    return 'The result of the query builder MySQL';
-  }
-}
-
-class PostgreSQLQueryBuilder implements QueryBuilder
-{
-  public function usefulFuctionC() : string
-  {
-    return 'The result of the query builder PostgreSQL';
-  }
-}
-
-class OracleQueryBuilder implements QueryBuilder
-{
-  public function usefulFuctionC() : string
-  {
-    return 'The result of the query builder Oracle';
-  }
-}
-
-function clientCode(AbstractFactory $factory)
-{
-  $DBConnection = $factory->DBConnection();
-  $DBRecord = $factory->DBRecord();
-  $DBQueryBuilder = $factory->DBQueryBuilder();
-
-  echo $DBConnection->usefulFuctionA() . "\n"; 
-  echo $DBRecord->usefulFuctionB() . "\n";
-  echo $DBQueryBuilder->usefulFuctionC() . "\n";
-}
-
-echo "Client: Testing client code with the first factory type:\n";
-clientCode(new MySQLFactory());
-
+$decorator1 = new EmailNotifier($simple);
+$decorator2 = new SlackNotifier($decorator1);
+echo "Client: Now I've got a decorated component:\n";
+clientCode($decorator2);
 echo "\n";
-
-echo "Client: Testing the same client code with the second factory type:\n";
-clientCode(new PostgreSQLFactory());
-
-echo "\n";
-
-echo "Client: Testing the same client code with the third factory type:\n";
-clientCode(new OracleFactory());
