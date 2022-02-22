@@ -1,65 +1,27 @@
 <?php
-namespace Ayur\Pattern\Decarator;
+namespace Ayur\Pattern\Iterator;
 
-interface Notifier
-{
-  public function send() : string;
-}
+$path="/home/ayur/myprojects/education/geekbrains/pattern/architecture";
+// Создаем новый объект DirectoryIterator
 
-class ConcreteNotifier implements Notifier
+$unicodeTreePrefix = function(\RecursiveTreeIterator $tree)
 {
-  public function send() : string
-  {
-    return "Send Message ConcreteComponent";
+  $prefixParts = [
+    \RecursiveTreeIterator::PREFIX_LEFT         => ' ',
+    \RecursiveTreeIterator::PREFIX_MID_HAS_NEXT => '│ ',
+    \RecursiveTreeIterator::PREFIX_END_HAS_NEXT => '├ ',
+    \RecursiveTreeIterator::PREFIX_END_LAST     => '└ '
+  ];
+  foreach ($prefixParts as $part => $string) {
+    $tree->setPrefixPart($part, $string);
   }
+};
+
+$dir  = new \RecursiveDirectoryIterator($path, \RecursiveDirectoryIterator::KEY_AS_FILENAME | \RecursiveDirectoryIterator::SKIP_DOTS);
+$tree = new \RecursiveTreeIterator($dir);
+$unicodeTreePrefix($tree);
+
+echo "[$path]\n";
+foreach ($tree as $filename => $line) {
+    echo $tree->getPrefix(), $filename, "\n";
 }
-
-class Decorator implements Notifier
-{
-  /**
-   * @var Notifier
-   */
-  protected $component;
-
-  public function __construct(Notifier $component)
-  {
-    $this->component = $component;
-  }
-
-  public function send() : string
-  {
-    return $this->component->send();
-  }
-}
-
-class EmailNotifier extends Decorator
-{
-  public function send() : string 
-  {
-    return "EmailNotifier(" . parent::send() . ")";
-  }
-}
-
-class SlackNotifier extends Decorator
-{
-  public function send() : string
-  {
-    return "SlackNotifier(" . parent::send() . ")";
-  }
-}
-
-function clientCode(Notifier $component)
-{
-  echo "RESULT: " . $component->send();
-}
-
-$simple = new ConcreteNotifier();
-echo "Client: I've got a simple component: \n";
-clientCode($simple);
-echo "\n\n";
-
-$decorator1 = new EmailNotifier($simple);
-$decorator2 = new SlackNotifier($decorator1);
-echo "Client: Now I've got a decorated component:\n";
-clientCode($decorator2);
-echo "\n";

@@ -1,89 +1,30 @@
 <?php
 namespace Ayur\Pattern\Adapter;
 
-class SquareAreaLib
-{
-  public function getSquareArea(int $diagonal)
-  {
-    $area = ($diagonal**2)/2;
-    return $area;
-  }
+/** 
+ * Сложность алгоритма для индексированному массиву
+ * индексация в массиве оществляется по праилам бинарного дерева
+ * Сложность алгоритма для бинарного дерева равна О(logN)
+ */
+
+/** 
+ * Сложность алгоритма для дублирования массива через foreach
+ * При создании дубликата массива через цикл foreach здесь мы должны
+ * пройтись по каждому элементу.
+ * Сложность алгоритма для цикла равна O(N)
+ */
+
+/**
+ * Сложность алгоритма для рекурсивной функции нахождения факториала
+ * Здесь идет вложенность фунций
+ * Сложность алгоритма для цикла равна O(N)
+ */
+
+function factorial($number) { 
+
+  if ($number < 2) {                            // O(1)
+      return 1;                                 // O(1)
+  } else { 
+      return ($number * factorial($number-1));  // O(N)
+  } 
 }
-
-class CircleAreaLib
-{
-  public function getCircleArea(int $diagonal)
-  {
-    $area = (M_PI * ($diagonal**2))/4;
-    return $area;
-  }
-}
-
-/** ISquare */
-interface ISquare
-{
-  function squareArea(int $sideSquare);
-}
-
-class ComponentSquare implements ISquare
-{
-  public function squareArea(int $sideSquare)
-  {
-    return 'square Area ' . $sideSquare;
-  }
-}
-
-class AdapterSquare extends SquareAreaLib
-{
-  private $adaptee;
-
-  public function __construct(ISquare $adaptee)
-  {
-    $this->adaptee = $adaptee;
-  }
-
-  public function getSquareArea(int $diagonal)
-  {
-    $sideSquare = $diagonal / sqrt(2);
-    return $this->adaptee->squareArea($sideSquare);
-  }
-}
-
-/** ICircle */
-interface ICircle
-{
-  function circleArea(int $circumference);
-}
-
-class AdapterCircle extends CircleAreaLib
-{
-  private $adaptee;
-
-  public function __construct(ICircle $adaptee)
-  {
-    $this->adaptee = $adaptee;
-  }
-
-  public function getCircleArea(int $diagonal)
-  {
-    $circumference = $diagonal / M_PI;
-    return $this->adaptee->circleArea($circumference);
-  }
-}
-
-function clientCode(SquareAreaLib $target)
-{
-  echo $target->getSquareArea(25);
-  return "";
-}
-
-
-$adaptee = new ComponentSquare();
-echo "Client: The Adaptee class has a weird interface. See, I don't understand it:\n";
-echo 'Adaptee: ' . $adaptee->squareArea(5);
-echo "\n\n";
-
-echo "Client: But I can work with it via the Adapter:\n";
-$adapter = new AdapterSquare($adaptee);
-clientCode($adapter);
-echo "\n";
